@@ -8,7 +8,10 @@ import org.slf4j.LoggerFactory;
 
 import redis.clients.jedis.BinaryClient.LIST_POSITION;
 import redis.clients.jedis.BitOP;
+import redis.clients.jedis.DebugParams;
 import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisMonitor;
+import redis.clients.jedis.JedisPubSub;
 
 public class JedisTest {
 
@@ -153,12 +156,73 @@ public class JedisTest {
 	@Test
 	public void testPubSub(){
 		Jedis jedis = JedisUtil.getJedis();
-		logger.info("{}",jedis.psubscribe("user", "name"));
+		jedis.psubscribe(new JedisPubSub() {}, "");
 		logger.info("{}",jedis.publish("user", "name"));
-		logger.info("{}",jedis.pubsub("user", "name"));
-		logger.info("{}",jedis.punsubscribe("user", "name"));
-		logger.info("{}",jedis.subscribe("user", "name"));
-		logger.info("{}",jedis.unsubscribe("user", "name"));
-	}                             
+		logger.info("{}",jedis.pubsubChannels("user"));
+		logger.info("{}",jedis.pubsubNumSub("user"));
+		jedis.subscribe(new JedisPubSub() {}, "user");
+		jedis.psubscribe(new JedisPubSub() {}, "user");
+	}
+	
+	@Test
+	public void testTransaction(){
+		Jedis jedis = JedisUtil.getJedis();
+		logger.info("{}",jedis.multi());
+		logger.info("{}",jedis.unwatch());
+		logger.info("{}",jedis.watch("user"));
+	}  
+	
+	@Test
+	public void testScript(){
+		Jedis jedis = JedisUtil.getJedis();
+		logger.info("{}",jedis.eval("user"));
+		logger.info("{}",jedis.evalsha("user"));
+		logger.info("{}",jedis.scriptExists("user"));
+		logger.info("{}",jedis.scriptFlush());
+		logger.info("{}",jedis.scriptKill());
+		logger.info("{}",jedis.scriptLoad("user"));
+	}
+
+	@Test
+	public void testConnection(){
+		Jedis jedis = JedisUtil.getJedis();
+		logger.info("{}",jedis.auth("user"));
+		logger.info("{}",jedis.echo("user"));
+		logger.info("{}",jedis.ping());
+		logger.info("{}",jedis.quit());
+		logger.info("{}",jedis.select(0));
+	}   
+	
+	@Test
+	public void testServer(){
+		Jedis jedis = JedisUtil.getJedis();
+		logger.info("{}",jedis.bgrewriteaof());
+		logger.info("{}",jedis.bgsave());
+		logger.info("{}",jedis.clientGetname());
+		logger.info("{}",jedis.clientKill("user"));
+		logger.info("{}",jedis.clientList());
+		logger.info("{}",jedis.clientSetname("user"));
+		logger.info("{}",jedis.configGet("user"));
+		logger.info("{}",jedis.configResetStat());
+		logger.info("{}",jedis.bgrewriteaof());
+		logger.info("{}",jedis.configSet("user", "name"));
+		logger.info("{}",jedis.debug(DebugParams.RELOAD()));
+		logger.info("{}",jedis.flushAll());
+		logger.info("{}",jedis.flushDB());
+		logger.info("{}",jedis.info());
+		logger.info("{}",jedis.lastsave());
+		jedis.monitor(new JedisMonitor() {
+			@Override
+			public void onCommand(String command) {
+				
+			}
+		});
+		jedis.sync();
+		logger.info("{}",jedis.save());
+		logger.info("{}",jedis.shutdown());
+		logger.info("{}",jedis.slaveof("127.0.0.1", 8080));
+		logger.info("{}",jedis.slowlogGet());
+		logger.info("{}",jedis.time());
+	}
 }                                  
                                    
